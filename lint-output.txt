@@ -1,0 +1,11 @@
+
+> strudel-taskflows@0.1.2 lint
+> eslint . '**/*.{js,jsx,ts,tsx}'
+
+
+/home/jovyan/excell-lbnl-workshop-2025/src/services/scenarioService.ts
+  58:60  error  'index' is defined but never used  @typescript-eslint/no-unused-vars
+  76:5   error  Unexpected console statement       no-console
+
+✖ 2 problems (2 errors, 0 warnings)
+

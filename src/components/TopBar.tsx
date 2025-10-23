@@ -1,6 +1,17 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { AppBar, IconButton, Stack, Toolbar, Typography } from '@mui/material';
-import React from 'react';
+import LogoutIcon from '@mui/icons-material/Logout';
+import {
+  AppBar,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Stack,
+  Toolbar,
+  Typography,
+} from '@mui/material';
+import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { cleanPath } from '../utils/queryParams.utils';
 import { AppLink } from './AppLink';
 import { ImageWrapper } from './ImageWrapper';
@@ -9,6 +20,23 @@ import { ImageWrapper } from './ImageWrapper';
  * Top navigation bar component
  */
 export const TopBar: React.FC = () => {
+  const { user, isAuthenticated, signOut } = useAuth();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const menuOpen = Boolean(anchorEl);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    signOut();
+    handleMenuClose();
+  };
+
   return (
     <AppBar
       color="default"
@@ -44,9 +72,54 @@ export const TopBar: React.FC = () => {
             </Typography>
           </AppLink>
         </Stack>
-        <IconButton size="large" edge="start" color="inherit">
-          <AccountCircleIcon />
-        </IconButton>
+        {isAuthenticated ? (
+          <>
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              onClick={handleMenuOpen}
+              aria-controls={menuOpen ? 'account-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={menuOpen ? 'true' : undefined}
+            >
+              <AccountCircleIcon />
+            </IconButton>
+            <Menu
+              id="account-menu"
+              anchorEl={anchorEl}
+              open={menuOpen}
+              onClose={handleMenuClose}
+              MenuListProps={{
+                'aria-labelledby': 'account-button',
+              }}
+            >
+              <MenuItem disabled>
+                <Typography variant="body2" fontWeight="bold">
+                  {user?.name}
+                </Typography>
+              </MenuItem>
+              <MenuItem disabled>
+                <Typography variant="body2" color="text.secondary">
+                  {user?.email}
+                </Typography>
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>
+                <LogoutIcon sx={{ mr: 1 }} fontSize="small" />
+                Logout
+              </MenuItem>
+            </Menu>
+          </>
+        ) : (
+          <Stack direction="row" spacing={1}>
+            <AppLink to="/auth/sign-in">
+              <Button variant="outlined">Sign In</Button>
+            </AppLink>
+            <AppLink to="/auth/sign-up">
+              <Button variant="contained">Sign Up</Button>
+            </AppLink>
+          </Stack>
+        )}
       </Toolbar>
     </AppBar>
   );

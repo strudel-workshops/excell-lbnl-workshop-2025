@@ -1,1 +1,10 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Export git identity for lint-staged
+export GIT_AUTHOR_NAME="$(git config user.name)"
+export GIT_AUTHOR_EMAIL="$(git config user.email)"
+export GIT_COMMITTER_NAME="$(git config user.name)"
+export GIT_COMMITTER_EMAIL="$(git config user.email)"
+
 npx lint-staged

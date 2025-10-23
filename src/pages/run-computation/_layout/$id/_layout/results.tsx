@@ -11,8 +11,8 @@ import {
   Typography,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { createFileRoute } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { createFileRoute, useParams } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
 import Plot from 'react-plotly.js';
 import { AppLink } from '../../../../../components/AppLink';
 import { useRunComputation } from '../../../-context/ContextProvider';
@@ -21,7 +21,11 @@ import {
   setResultsLineChartData,
   setResultsTableData,
 } from '../../../-context/actions';
-import { useDataFromSource } from '../../../../../hooks/useDataFromSource';
+import {
+  getScenarioById,
+  updateScenario,
+} from '../../../../../services/scenarioService';
+import { Scenario } from '../../../../../types/scenario.types';
 
 export const Route = createFileRoute(
   '/run-computation/_layout/$id/_layout/results'
@@ -35,45 +39,64 @@ export const Route = createFileRoute(
  */
 function ResultsPage() {
   const { state, dispatch } = useRunComputation();
-  // CUSTOMIZE: results table data source
-  const tableData = useDataFromSource('dummy-data/results_table.json');
-  // CUSTOMIZE: results line chart data source
-  const lineData = useDataFromSource('dummy-data/results_line_chart.json');
-  // CUSTOMIZE: results bar chart data source
-  const barData = useDataFromSource('dummy-data/results_bar_chart.json');
+  const { id } = useParams({
+    from: '/run-computation/_layout/$id/_layout/results',
+  });
+  const [scenario, setScenario] = useState<Scenario | null>(null);
 
   /**
-   * Set data for the results table when the data loads
+   * Load scenario data when component mounts
    */
   useEffect(() => {
-    if (!state.results.table.data || state.results.table.data.length === 0) {
-      dispatch(setResultsTableData(tableData));
+    const loadedScenario = getScenarioById(id);
+    if (loadedScenario) {
+      setScenario(loadedScenario);
+      // Load results from scenario
+      if (loadedScenario.results) {
+        if (
+          loadedScenario.results.table &&
+          loadedScenario.results.table.length > 0
+        ) {
+          dispatch(setResultsTableData(loadedScenario.results.table));
+        }
+        if (
+          loadedScenario.results.lineChart &&
+          loadedScenario.results.lineChart.length > 0
+        ) {
+          dispatch(setResultsLineChartData(loadedScenario.results.lineChart));
+        }
+        if (
+          loadedScenario.results.barChart &&
+          loadedScenario.results.barChart.length > 0
+        ) {
+          dispatch(setResultsBarChartData(loadedScenario.results.barChart));
+        }
+      }
     }
-  }, [tableData]);
+  }, [id]);
 
   /**
-   * Set data for the results line chart when the data loads
+   * Save results data back to scenario when it changes
    */
   useEffect(() => {
     if (
-      !state.results.lineChart.data ||
-      state.results.lineChart.data.length === 0
+      scenario &&
+      state.results.table.data &&
+      state.results.table.data.length > 0
     ) {
-      dispatch(setResultsLineChartData(lineData));
+      updateScenario(scenario.id, {
+        results: {
+          table: state.results.table.data,
+          lineChart: state.results.lineChart.data,
+          barChart: state.results.barChart.data,
+        },
+      });
     }
-  }, [lineData]);
-
-  /**
-   * Set data for the results bar chart when the data loads
-   */
-  useEffect(() => {
-    if (
-      !state.results.barChart.data ||
-      state.results.barChart.data.length === 0
-    ) {
-      dispatch(setResultsBarChartData(barData));
-    }
-  }, [barData]);
+  }, [
+    state.results.table.data,
+    state.results.lineChart.data,
+    state.results.barChart.data,
+  ]);
 
   return (
     <Stack spacing={0} flex={1}>
@@ -90,7 +113,7 @@ function ResultsPage() {
             <StepLabel>
               <AppLink
                 to="/run-computation/$id/data-inputs"
-                params={{ id: 'new' }}
+                params={{ id }}
                 sx={{ color: 'inherit', textDecoration: 'none' }}
               >
                 Data Inputs
@@ -101,7 +124,7 @@ function ResultsPage() {
             <StepLabel>
               <AppLink
                 to="/run-computation/$id/settings"
-                params={{ id: 'new' }}
+                params={{ id }}
                 sx={{ color: 'inherit', textDecoration: 'none' }}
               >
                 Optimization Settings
@@ -112,7 +135,7 @@ function ResultsPage() {
             <StepLabel>
               <AppLink
                 to="/run-computation/$id/results"
-                params={{ id: 'new' }}
+                params={{ id }}
                 sx={{ color: 'inherit', textDecoration: 'none' }}
               >
                 Results
@@ -221,7 +244,7 @@ function ResultsPage() {
           width: '100%',
         }}
       >
-        <AppLink to="/run-computation/$id/settings" params={{ id: 'new' }}>
+        <AppLink to="/run-computation/$id/settings" params={{ id }}>
           {/* CUSTOMIZE: back to settings button */}
           <Button variant="contained">Back to Optimization Settings</Button>
         </AppLink>

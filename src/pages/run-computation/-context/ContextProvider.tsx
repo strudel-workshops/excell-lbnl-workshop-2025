@@ -30,6 +30,7 @@ export interface RunComputationState {
     };
   };
   selectedItem?: any;
+  selectedScenario?: any;
 }
 
 /**
@@ -167,6 +168,12 @@ function runComputationReducer(
             data: action.payload,
           },
         },
+      };
+    }
+    case RunComputationActionType.SET_SELECTED_SCENARIO: {
+      return {
+        ...state,
+        selectedScenario: action.payload,
       };
     }
     default: {

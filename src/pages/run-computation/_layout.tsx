@@ -3,9 +3,16 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { Box } from '@mui/material';
 import { GridActionsCellItem } from '@mui/x-data-grid';
-import { useDataFromSource } from '../../hooks/useDataFromSource';
 import { RunComputationProvider } from './-context/ContextProvider';
 import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { useAuth } from '../../context/AuthContext';
+import { useEffect, useState } from 'react';
+import {
+  getUserScenarios,
+  deleteScenario,
+  duplicateScenario,
+} from '../../services/scenarioService';
+import { Scenario } from '../../types/scenario.types';
 
 export const Route = createFileRoute('/run-computation/_layout')({
   component: RunComputationLayout,
@@ -16,8 +23,34 @@ export const Route = createFileRoute('/run-computation/_layout')({
  * Inner pages are rendered inside the `<Outlet />` component
  */
 function RunComputationLayout() {
-  // CUSTOMIZE: index page data source
-  const listItems = useDataFromSource('dummy-data/list.json');
+  const { user } = useAuth();
+  const [scenarios, setScenarios] = useState<Scenario[]>([]);
+
+  // Load user scenarios
+  useEffect(() => {
+    if (user) {
+      const userScenarios = getUserScenarios(user.id);
+      setScenarios(userScenarios);
+    }
+  }, [user]);
+
+  // Handle duplicate scenario
+  const handleDuplicate = (scenarioId: string) => {
+    const duplicated = duplicateScenario(scenarioId);
+    if (duplicated && user) {
+      const updatedScenarios = getUserScenarios(user.id);
+      setScenarios(updatedScenarios);
+    }
+  };
+
+  // Handle delete scenario
+  const handleDelete = (scenarioId: string) => {
+    const success = deleteScenario(scenarioId);
+    if (success && user) {
+      const updatedScenarios = getUserScenarios(user.id);
+      setScenarios(updatedScenarios);
+    }
+  };
 
   return (
     <Box>
@@ -25,7 +58,7 @@ function RunComputationLayout() {
         <RunComputationProvider
           list={{
             table: {
-              data: listItems,
+              data: scenarios,
               // CUSTOMIZE: index page data source unique ID field
               dataIdField: 'id',
               // CUSTOMIZE: index page columns
@@ -54,15 +87,17 @@ function RunComputationLayout() {
                   field: 'actions',
                   headerName: 'Actions',
                   type: 'actions',
-                  getActions: () => [
+                  getActions: (params: any) => [
                     <GridActionsCellItem
                       icon={<ContentCopyIcon />}
                       label="Duplicate"
+                      onClick={() => handleDuplicate(params.id)}
                     />,
                     <GridActionsCellItem icon={<EditIcon />} label="Edit" />,
                     <GridActionsCellItem
                       icon={<DeleteIcon />}
                       label="Delete"
+                      onClick={() => handleDelete(params.id)}
                     />,
                   ],
                   flex: 1,

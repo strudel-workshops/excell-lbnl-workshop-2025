@@ -6,6 +6,7 @@ export enum RunComputationActionType {
   SET_RESULTS_TABLE_DATA = 'SET_RESULTS_TABLE_DATA',
   SET_RESULTS_LINECHART_DATA = 'SET_RESULTS_LINECHART_DATA',
   SET_RESULTS_BARCHART_DATA = 'SET_RESULTS_BARCHART_DATA',
+  SET_SELECTED_SCENARIO = 'SET_SELECTED_SCENARIO',
 }
 
 export interface RunComputationAction {
@@ -46,4 +47,9 @@ export const setResultsBarChartData = (
 ): RunComputationAction => ({
   type: RunComputationActionType.SET_RESULTS_BARCHART_DATA,
   payload: data,
+});
+
+export const setSelectedScenario = (scenario: any): RunComputationAction => ({
+  type: RunComputationActionType.SET_SELECTED_SCENARIO,
+  payload: scenario,
 });

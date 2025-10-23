@@ -67,9 +67,10 @@ export const NewScenarioModal: React.FC<Props> = ({
             id="analysis-type-select"
             label="Age"
           >
-            <MenuItem value={10}>Analysis Type 1</MenuItem>
-            <MenuItem value={20}>Analysis Type 2</MenuItem>
-            <MenuItem value={30}>Analysis Type 3</MenuItem>
+            <MenuItem value={10}>Estimate Load</MenuItem>
+            <MenuItem value={20}>Estimate Heat Source</MenuItem>
+            <MenuItem value={30}>Initial Design</MenuItem>
+            <MenuItem value={40}>Detailed Design</MenuItem>
           </Select>
         </FormControl>
         <FormControl fullWidth>

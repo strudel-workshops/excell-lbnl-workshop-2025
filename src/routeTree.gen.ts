@@ -25,6 +25,7 @@ import { Route as MonitorActivitiesCalendarImport } from './pages/monitor-activi
 import { Route as ExploreDataIdImport } from './pages/explore-data/$id';
 import { Route as ContributeDataLayoutImport } from './pages/contribute-data/_layout';
 import { Route as CompareDataLayoutImport } from './pages/compare-data/_layout';
+import { Route as AuthLayoutImport } from './pages/auth/_layout';
 import { Route as RunComputationLayoutIndexImport } from './pages/run-computation/_layout/index';
 import { Route as ContributeDataLayoutIndexImport } from './pages/contribute-data/_layout/index';
 import { Route as CompareDataLayoutIndexImport } from './pages/compare-data/_layout/index';
@@ -33,6 +34,8 @@ import { Route as ContributeDataLayoutPortalImport } from './pages/contribute-da
 import { Route as ContributeDataLayoutNewImport } from './pages/contribute-data/_layout/new';
 import { Route as CompareDataLayoutNewImport } from './pages/compare-data/_layout/new';
 import { Route as CompareDataLayoutCompareImport } from './pages/compare-data/_layout/compare';
+import { Route as AuthLayoutSignUpImport } from './pages/auth/_layout/sign-up';
+import { Route as AuthLayoutSignInImport } from './pages/auth/_layout/sign-in';
 import { Route as RunComputationLayoutIdLayoutImport } from './pages/run-computation/_layout/$id/_layout';
 import { Route as RunComputationLayoutIdLayoutSettingsImport } from './pages/run-computation/_layout/$id/_layout/settings';
 import { Route as RunComputationLayoutIdLayoutRunningImport } from './pages/run-computation/_layout/$id/_layout/running';
@@ -44,6 +47,7 @@ import { Route as RunComputationLayoutIdLayoutDataInputsImport } from './pages/r
 const RunComputationImport = createFileRoute('/run-computation')();
 const ContributeDataImport = createFileRoute('/contribute-data')();
 const CompareDataImport = createFileRoute('/compare-data')();
+const AuthImport = createFileRoute('/auth')();
 const RunComputationLayoutIdImport = createFileRoute(
   '/run-computation/_layout/$id'
 )();
@@ -65,6 +69,12 @@ const ContributeDataRoute = ContributeDataImport.update({
 const CompareDataRoute = CompareDataImport.update({
   id: '/compare-data',
   path: '/compare-data',
+  getParentRoute: () => rootRoute,
+} as any);
+
+const AuthRoute = AuthImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRoute,
 } as any);
 
@@ -138,6 +148,11 @@ const CompareDataLayoutRoute = CompareDataLayoutImport.update({
   getParentRoute: () => CompareDataRoute,
 } as any);
 
+const AuthLayoutRoute = AuthLayoutImport.update({
+  id: '/_layout',
+  getParentRoute: () => AuthRoute,
+} as any);
+
 const RunComputationLayoutIdRoute = RunComputationLayoutIdImport.update({
   id: '/$id',
   path: '/$id',
@@ -196,6 +211,18 @@ const CompareDataLayoutCompareRoute = CompareDataLayoutCompareImport.update({
   getParentRoute: () => CompareDataLayoutRoute,
 } as any);
 
+const AuthLayoutSignUpRoute = AuthLayoutSignUpImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => AuthLayoutRoute,
+} as any);
+
+const AuthLayoutSignInRoute = AuthLayoutSignInImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => AuthLayoutRoute,
+} as any);
+
 const RunComputationLayoutIdLayoutRoute =
   RunComputationLayoutIdLayoutImport.update({
     id: '/_layout',
@@ -240,6 +267,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/';
       preLoaderRoute: typeof IndexImport;
       parentRoute: typeof rootRoute;
+    };
+    '/auth': {
+      id: '/auth';
+      path: '/auth';
+      fullPath: '/auth';
+      preLoaderRoute: typeof AuthImport;
+      parentRoute: typeof rootRoute;
+    };
+    '/auth/_layout': {
+      id: '/auth/_layout';
+      path: '/auth';
+      fullPath: '/auth';
+      preLoaderRoute: typeof AuthLayoutImport;
+      parentRoute: typeof AuthRoute;
     };
     '/compare-data': {
       id: '/compare-data';
@@ -338,6 +379,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/search-data-repositories';
       preLoaderRoute: typeof SearchDataRepositoriesIndexImport;
       parentRoute: typeof rootRoute;
+    };
+    '/auth/_layout/sign-in': {
+      id: '/auth/_layout/sign-in';
+      path: '/sign-in';
+      fullPath: '/auth/sign-in';
+      preLoaderRoute: typeof AuthLayoutSignInImport;
+      parentRoute: typeof AuthLayoutImport;
+    };
+    '/auth/_layout/sign-up': {
+      id: '/auth/_layout/sign-up';
+      path: '/sign-up';
+      fullPath: '/auth/sign-up';
+      preLoaderRoute: typeof AuthLayoutSignUpImport;
+      parentRoute: typeof AuthLayoutImport;
     };
     '/compare-data/_layout/compare': {
       id: '/compare-data/_layout/compare';
@@ -441,6 +496,30 @@ declare module '@tanstack/react-router' {
 }
 
 // Create and export the route tree
+
+interface AuthLayoutRouteChildren {
+  AuthLayoutSignInRoute: typeof AuthLayoutSignInRoute;
+  AuthLayoutSignUpRoute: typeof AuthLayoutSignUpRoute;
+}
+
+const AuthLayoutRouteChildren: AuthLayoutRouteChildren = {
+  AuthLayoutSignInRoute: AuthLayoutSignInRoute,
+  AuthLayoutSignUpRoute: AuthLayoutSignUpRoute,
+};
+
+const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(
+  AuthLayoutRouteChildren
+);
+
+interface AuthRouteChildren {
+  AuthLayoutRoute: typeof AuthLayoutRouteWithChildren;
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthLayoutRoute: AuthLayoutRouteWithChildren,
+};
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren);
 
 interface CompareDataLayoutRouteChildren {
   CompareDataLayoutCompareRoute: typeof CompareDataLayoutCompareRoute;
@@ -564,6 +643,7 @@ const RunComputationRouteWithChildren = RunComputationRoute._addFileChildren(
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute;
+  '/auth': typeof AuthLayoutRouteWithChildren;
   '/compare-data': typeof CompareDataLayoutRouteWithChildren;
   '/contribute-data': typeof ContributeDataLayoutRouteWithChildren;
   '/explore-data/$id': typeof ExploreDataIdRoute;
@@ -575,6 +655,8 @@ export interface FileRoutesByFullPath {
   '/monitor-activities': typeof MonitorActivitiesIndexRoute;
   '/playground': typeof PlaygroundIndexRoute;
   '/search-data-repositories': typeof SearchDataRepositoriesIndexRoute;
+  '/auth/sign-in': typeof AuthLayoutSignInRoute;
+  '/auth/sign-up': typeof AuthLayoutSignUpRoute;
   '/compare-data/compare': typeof CompareDataLayoutCompareRoute;
   '/compare-data/new': typeof CompareDataLayoutNewRoute;
   '/contribute-data/new': typeof ContributeDataLayoutNewRoute;
@@ -592,6 +674,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute;
+  '/auth': typeof AuthLayoutRouteWithChildren;
   '/compare-data': typeof CompareDataLayoutIndexRoute;
   '/contribute-data': typeof ContributeDataLayoutIndexRoute;
   '/explore-data/$id': typeof ExploreDataIdRoute;
@@ -603,6 +686,8 @@ export interface FileRoutesByTo {
   '/monitor-activities': typeof MonitorActivitiesIndexRoute;
   '/playground': typeof PlaygroundIndexRoute;
   '/search-data-repositories': typeof SearchDataRepositoriesIndexRoute;
+  '/auth/sign-in': typeof AuthLayoutSignInRoute;
+  '/auth/sign-up': typeof AuthLayoutSignUpRoute;
   '/compare-data/compare': typeof CompareDataLayoutCompareRoute;
   '/compare-data/new': typeof CompareDataLayoutNewRoute;
   '/contribute-data/new': typeof ContributeDataLayoutNewRoute;
@@ -618,6 +703,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute;
   '/': typeof IndexRoute;
+  '/auth': typeof AuthRouteWithChildren;
+  '/auth/_layout': typeof AuthLayoutRouteWithChildren;
   '/compare-data': typeof CompareDataRouteWithChildren;
   '/compare-data/_layout': typeof CompareDataLayoutRouteWithChildren;
   '/contribute-data': typeof ContributeDataRouteWithChildren;
@@ -632,6 +719,8 @@ export interface FileRoutesById {
   '/monitor-activities/': typeof MonitorActivitiesIndexRoute;
   '/playground/': typeof PlaygroundIndexRoute;
   '/search-data-repositories/': typeof SearchDataRepositoriesIndexRoute;
+  '/auth/_layout/sign-in': typeof AuthLayoutSignInRoute;
+  '/auth/_layout/sign-up': typeof AuthLayoutSignUpRoute;
   '/compare-data/_layout/compare': typeof CompareDataLayoutCompareRoute;
   '/compare-data/_layout/new': typeof CompareDataLayoutNewRoute;
   '/contribute-data/_layout/new': typeof ContributeDataLayoutNewRoute;
@@ -652,6 +741,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | '/'
+    | '/auth'
     | '/compare-data'
     | '/contribute-data'
     | '/explore-data/$id'
@@ -663,6 +753,8 @@ export interface FileRouteTypes {
     | '/monitor-activities'
     | '/playground'
     | '/search-data-repositories'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
     | '/compare-data/compare'
     | '/compare-data/new'
     | '/contribute-data/new'
@@ -679,6 +771,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo;
   to:
     | '/'
+    | '/auth'
     | '/compare-data'
     | '/contribute-data'
     | '/explore-data/$id'
@@ -690,6 +783,8 @@ export interface FileRouteTypes {
     | '/monitor-activities'
     | '/playground'
     | '/search-data-repositories'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
     | '/compare-data/compare'
     | '/compare-data/new'
     | '/contribute-data/new'
@@ -703,6 +798,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/auth'
+    | '/auth/_layout'
     | '/compare-data'
     | '/compare-data/_layout'
     | '/contribute-data'
@@ -717,6 +814,8 @@ export interface FileRouteTypes {
     | '/monitor-activities/'
     | '/playground/'
     | '/search-data-repositories/'
+    | '/auth/_layout/sign-in'
+    | '/auth/_layout/sign-up'
     | '/compare-data/_layout/compare'
     | '/compare-data/_layout/new'
     | '/contribute-data/_layout/new'
@@ -736,6 +835,7 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  AuthRoute: typeof AuthRouteWithChildren;
   CompareDataRoute: typeof CompareDataRouteWithChildren;
   ContributeDataRoute: typeof ContributeDataRouteWithChildren;
   ExploreDataIdRoute: typeof ExploreDataIdRoute;
@@ -751,6 +851,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRouteWithChildren,
   CompareDataRoute: CompareDataRouteWithChildren,
   ContributeDataRoute: ContributeDataRouteWithChildren,
   ExploreDataIdRoute: ExploreDataIdRoute,
@@ -775,6 +876,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/auth",
         "/compare-data",
         "/contribute-data",
         "/explore-data/$id",
@@ -790,6 +892,20 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/auth": {
+      "filePath": "auth",
+      "children": [
+        "/auth/_layout"
+      ]
+    },
+    "/auth/_layout": {
+      "filePath": "auth/_layout.tsx",
+      "parent": "/auth",
+      "children": [
+        "/auth/_layout/sign-in",
+        "/auth/_layout/sign-up"
+      ]
     },
     "/compare-data": {
       "filePath": "compare-data",
@@ -859,6 +975,14 @@ export const routeTree = rootRoute
     },
     "/search-data-repositories/": {
       "filePath": "search-data-repositories/index.tsx"
+    },
+    "/auth/_layout/sign-in": {
+      "filePath": "auth/_layout/sign-in.tsx",
+      "parent": "/auth/_layout"
+    },
+    "/auth/_layout/sign-up": {
+      "filePath": "auth/_layout/sign-up.tsx",
+      "parent": "/auth/_layout"
     },
     "/compare-data/_layout/compare": {
       "filePath": "compare-data/_layout/compare.tsx",

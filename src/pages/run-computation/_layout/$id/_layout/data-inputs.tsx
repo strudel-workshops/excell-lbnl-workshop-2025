@@ -9,13 +9,17 @@ import {
   Stepper,
   Typography,
 } from '@mui/material';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { useDataFromSource } from '../../../../../hooks/useDataFromSource';
 import { useRunComputation } from '../../../-context/ContextProvider';
 import { setInputsTableData } from '../../../-context/actions';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useParams } from '@tanstack/react-router';
 import { AppLink } from '../../../../../components/AppLink';
+import {
+  getScenarioById,
+  updateScenario,
+} from '../../../../../services/scenarioService';
+import { Scenario } from '../../../../../types/scenario.types';
 
 export const Route = createFileRoute(
   '/run-computation/_layout/$id/_layout/data-inputs'
@@ -30,17 +34,39 @@ export const Route = createFileRoute(
  */
 function DataInputsPage() {
   const { state, dispatch } = useRunComputation();
-  // CUSTOMIZE: inputs table data source
-  const inputsData = useDataFromSource('dummy-data/inputs.json');
+  const { id } = useParams({
+    from: '/run-computation/_layout/$id/_layout/data-inputs',
+  });
+  const [scenario, setScenario] = useState<Scenario | null>(null);
 
   /**
-   * Set data for the inputs table when the data loads
+   * Load scenario data when component mounts
    */
   useEffect(() => {
-    if (!state.inputs.table.data || state.inputs.table.data.length === 0) {
-      dispatch(setInputsTableData(inputsData));
+    const loadedScenario = getScenarioById(id);
+    if (loadedScenario) {
+      setScenario(loadedScenario);
+      // Load inputs from scenario
+      if (loadedScenario.inputs && loadedScenario.inputs.length > 0) {
+        dispatch(setInputsTableData(loadedScenario.inputs));
+      }
     }
-  }, [inputsData]);
+  }, [id]);
+
+  /**
+   * Save inputs data back to scenario when it changes
+   */
+  useEffect(() => {
+    if (
+      scenario &&
+      state.inputs.table.data &&
+      state.inputs.table.data.length > 0
+    ) {
+      updateScenario(scenario.id, {
+        inputs: state.inputs.table.data,
+      });
+    }
+  }, [state.inputs.table.data]);
 
   return (
     <Stack spacing={0} flex={1}>
@@ -57,7 +83,7 @@ function DataInputsPage() {
             <StepLabel>
               <AppLink
                 to="/run-computation/$id/data-inputs"
-                params={{ id: 'new' }}
+                params={{ id }}
                 sx={{ color: 'inherit', textDecoration: 'none' }}
               >
                 Data Inputs
@@ -68,7 +94,7 @@ function DataInputsPage() {
             <StepLabel>
               <AppLink
                 to="/run-computation/$id/settings"
-                params={{ id: 'new' }}
+                params={{ id }}
                 sx={{ color: 'inherit', textDecoration: 'none' }}
               >
                 Optimization Settings
@@ -79,7 +105,7 @@ function DataInputsPage() {
             <StepLabel>
               <AppLink
                 to="/run-computation/$id/results"
-                params={{ id: 'new' }}
+                params={{ id }}
                 sx={{ color: 'inherit', textDecoration: 'none' }}
               >
                 Results
@@ -175,7 +201,7 @@ function DataInputsPage() {
           width: '100%',
         }}
       >
-        <AppLink to="/run-computation/$id/settings" params={{ id: 'new' }}>
+        <AppLink to="/run-computation/$id/settings" params={{ id }}>
           <Button variant="contained" data-testid="rnc-settings-next-button">
             Continue to Optimization Settings
           </Button>
